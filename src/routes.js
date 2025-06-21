@@ -7,14 +7,9 @@ import {
   DrawerItemList,
 } from "@react-navigation/drawer";
 import InitScreen from "./screens/InitScreen";
-import SignIn from "./screens/SignIn";
-import SignUp from "./screens/SignUp";
 import Home from "./screens/Home";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import PerfilProf from "./screens/PerfilProf";
-import Services from "./screens/Services";
+import Teste from "./screens/Teste";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -55,6 +50,19 @@ function DrawerApp() {
           ),
         }}
       />
+      <Drawer.Screen
+        name="Teste"
+        component={Teste}
+        options={{
+          drawerIcon: ({ focused, size }) => (
+            <AntDesign
+              name="test"
+              size={size}
+              color={focused ? "#b18461" : "#ccc"}
+            />
+          ),
+        }}
+      />
     </Drawer.Navigator>
   );
 }
@@ -67,8 +75,8 @@ export default function Routes() {
     >
       <Stack.Screen name="DrawerApp" component={DrawerApp} />
       <Stack.Screen name="InitScreen" component={InitScreen} />
-      <Stack.Screen name="SignIn" component={SignIn} />
-      <Stack.Screen name="SignUp" component={SignUp} />
+      {/* <Stack.Screen name="SignIn" component={SignIn} />
+      <Stack.Screen name="SignUp" component={SignUp} />  */}
     </Stack.Navigator>
   );
 }
