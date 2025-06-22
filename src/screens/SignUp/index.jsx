@@ -1,10 +1,10 @@
 import "react-native-url-polyfill/auto";
 import { useState, useEffect } from "react";
 import { supabase } from "../../config/supabaseConfig";
-import Auth from "./../../components/Auth";
-import { View, Text, Button } from "react-native";
+import Auth from "../../components/Auth";
+import { View, Text } from "react-native";
 
-export default function App({ navigation }) {
+export default function SignUp({ navigation }) {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
@@ -30,12 +30,8 @@ export default function App({ navigation }) {
   }, [session]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      {/* <Auth /> */}
-      <Text>Welcome to the Init Screen!</Text>
-      <Button title="Go to Sign In" onPress={() => navigation.navigate("SignIn")} />
-      <Button title="Go to Sign Up" onPress={() => navigation.navigate("SignUp")} />
-
+    <View>
+      <Auth />
       {session && session.user && <Text>{session.user.id}</Text>}
     </View>
   );

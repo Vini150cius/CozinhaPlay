@@ -10,6 +10,8 @@ import InitScreen from "./screens/InitScreen";
 import Home from "./screens/Home";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import Teste from "./screens/Teste";
+import SignIn from "./screens/SignIn";
+import SignUp from "./screens/SignUp";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -75,8 +77,8 @@ export default function Routes() {
     >
       <Stack.Screen name="DrawerApp" component={DrawerApp} />
       <Stack.Screen name="InitScreen" component={InitScreen} />
-      {/* <Stack.Screen name="SignIn" component={SignIn} />
-      <Stack.Screen name="SignUp" component={SignUp} />  */}
+      <Stack.Screen name="SignIn" component={SignIn} />
+      <Stack.Screen name="SignUp" component={SignUp} /> 
     </Stack.Navigator>
   );
 }
