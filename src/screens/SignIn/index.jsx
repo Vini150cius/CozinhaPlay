@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { styles } from "./styles";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import Toast from "react-native-toast-message";
 
 export default function SignIn({ navigation }) {
   const [session, setSession] = useState(null);
@@ -121,7 +122,12 @@ export default function SignIn({ navigation }) {
           <TouchableOpacity
             style={[styles.googleButton, loading && styles.buttonDisabled]}
             disabled={loading}
-            onPress={() => console.log("Login com Google")}
+            onPress={() =>
+              Toast.show({
+                type: "info",
+                text1: "Funcionalidade em desenvolvimento",
+              })
+            }
           >
             {loading ? (
               <ActivityIndicator color="#007AFF" />
