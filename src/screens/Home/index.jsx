@@ -1,152 +1,150 @@
-import React, { useEffect, useState } from "react";
-import {
-  FlatList,
-  SafeAreaView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import styles from "./styles";
-import Feather from "react-native-vector-icons/Feather";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import CreateCategory from "../../components/CreateCategory";
+import { FlatList } from "react-native";
 import { supabase } from "../../config/supabaseConfig";
 import Toast from "react-native-toast-message";
 
 export default function Home({ navigation }) {
-  const [nome, setNome] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [numero, setNumero] = useState("");
-  const [feed, setFeed] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const onClose = () => setVisible(false);
+
+  const onCategoryCreated = () => {
+    Toast.show({
+      type: "success",
+      text1: "Categoria criada com sucesso",
+      text2: "Você pode criar outra categoria",
+    });
+    loadCategories();
+  };
+
+  async function loadCategories() {
+    try {
+      setLoading(true);
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      if (!sessionData.session?.user) {
+        Toast.show({
+          type: "error",
+          text1: "Erro de autenticação",
+          text2: "Por favor, faça login novamente.",
+        });
+        return;
+      }
+
+      const user = sessionData.session.user;
+
+      const { data, error } = await supabase
+        .from("categorias")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Erro ao carregar categorias:", error);
+        Toast.show({
+          type: "error",
+          text1: "Erro ao carregar categorias",
+          text2: "Por favor, tente novamente mais tarde.",
+        });
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setCategorias(data);
+      } else {
+        setCategorias([]);
+      }
+    } catch (error) {
+      console.error("Erro na função loadCategories:", error);
+      Toast.show({
+        type: "error",
+        text1: "Erro ao carregar categorias",
+        text2: "Por favor, tente novamente mais tarde.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    read();
-    const interval = setInterval(() => {
-      read();
-    }, 5000);
-    return () => clearInterval(interval);
+    loadCategories();
   }, []);
 
-  // Função para criar dados no Supabase
-  async function create() {
-    if (!nome || !descricao || !numero) {
-      Toast.show({
-        type: "error",
-        text1: "Erro",
-        text2: "Preencha todos os campos!",
-      });
-      return;
-    }
+  const Categories = ({ data }) => {
+    return (
+      <TouchableOpacity
+        style={styles.categoryItem}
+        onPress={() =>
+          navigation.navigate("RecipesScreen", { categoryId: data.id })
+        }
+        activeOpacity={0.9}
+      >
+        <View style={styles.categoryContent}>
+          <View style={styles.categoryImageContainer}>
+            <FontAwesome5 name="utensils" size={32} color="#ccc" />
+          </View>
+          <View style={styles.categoryDetailsContainer}>
+            <Text style={styles.categoryTitle}>{data.name}</Text>
+            <Text style={styles.categoryDescription} numberOfLines={2}>
+              {data.description || "Sem descrição disponível"}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
-    const { error } = await supabase.from("pessoas").insert([
-      {
-        nome: nome,
-        descricao: descricao,
-        numero: numero,
-      },
-    ]);
+  const renderItem = ({ item }) => <Categories data={item} />;
 
-    if (error) {
-      Toast.show({
-        type: "error",
-        text1: "Erro",
-        text2: "Erro ao enviar dados!",
-      });
-    } else {
-      setNome("");
-      setDescricao("");
-      setNumero("");
-      read();
-      Toast.show({
-        type: "success",
-        text1: "Sucesso",
-        text2: "Dados enviados com sucesso!",
-      });
-    }
-  }
-
-  // Função para ler dados do Supabase
-  async function read() {
-    const { data, error } = await supabase
-      .from("pessoas")
-      .select("*")
-      .order("id", { ascending: false });
-
-    if (error) {
-      console.log("Erro ao ler dados:", error);
-      return;
-    }
-
-    setFeed(data);
-  }
-
-  const Pessoa = ({ data }) => (
-    <View style={styles.areaPessoa}>
-      <Text style={styles.textoPessoa}>Nome: {data.nome}</Text>
-      <Text style={styles.textoPessoa}>Descrição: {data.descricao}</Text>
-      <Text style={styles.textoPessoa}>Número: {data.numero}</Text>
+  const renderEmptyComponent = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>Nenhuma categoria encontrada</Text>
+      <Text style={styles.emptySubText}>Adicione sua primeira categoria!</Text>
     </View>
   );
 
-  const renderItem = ({ item }) => <Pessoa data={item} />;
-
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.openDrawer()}
-          style={styles.menuIcon}
-        >
-          <Feather name="menu" size={24} color="white" />
-        </TouchableOpacity>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar..."
-          placeholderTextColor="#999"
-        />
-        <TouchableOpacity style={styles.searchIcon}>
-          <Ionicons name="notifications" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.buttonAddCategory}
+        onPress={() => setVisible(true)}
+      >
+        <FontAwesome5 name="plus" size={20} color="#fff" />
+        <Text style={styles.buttonText}>Adicionar Categoria</Text>
+      </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>Cadastro de Pessoas</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nome"
-          value={nome}
-          onChangeText={setNome}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Descrição"
-          value={descricao}
-          onChangeText={setDescricao}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Número"
-          value={numero}
-          onChangeText={setNumero}
-          keyboardType="numeric"
-        />
-
-        <TouchableOpacity style={styles.button} onPress={create}>
-          <Text style={styles.buttonText}>Enviar</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.listContainer}>
+      <View style={styles.categoriesContainer}>
         <FlatList
-          data={feed}
+          data={categorias}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           contentContainerStyle={styles.listaContainer}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>Nenhum dado encontrado</Text>
-          }
+          ListEmptyComponent={renderEmptyComponent}
+          refreshing={loading}
+          onRefresh={loadCategories}
         />
       </View>
-    </SafeAreaView>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={visible}
+        onRequestClose={onClose}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <CreateCategory
+              onClose={onClose}
+              onCategoryCreated={onCategoryCreated}
+            />
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
