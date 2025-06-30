@@ -1,17 +1,24 @@
 // screens/CreateRecipe.js
 import { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { supabase } from "../config/supabaseConfig";
 import Toast from "react-native-toast-message";
 
-export default function CreateRecipe() {
+export default function CreateRecipe({ onClose, onRecipeCreated }) {
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [formato, setFormato] = useState("texto");
   const [conteudo, setConteudo] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
   const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function loadCategorias() {
@@ -71,67 +78,102 @@ export default function CreateRecipe() {
   }
 
   return (
-    <View style={styles.container}>
+    <>
       <Text style={styles.title}>Nova Receita</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Título"
-        value={titulo}
-        onChangeText={setTitulo}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Descrição"
-        value={descricao}
-        onChangeText={setDescricao}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Conteúdo (texto ou link)"
-        value={conteudo}
-        onChangeText={setConteudo}
-      />
 
-      <Text style={styles.label}>Formato</Text>
-      <Picker
-        selectedValue={formato}
-        onValueChange={(itemValue) => setFormato(itemValue)}
-      >
-        <Picker.Item label="Texto" value="texto" />
-        <Picker.Item label="Vídeo" value="video" />
-        <Picker.Item label="TikTok" value="tiktok" />
-        <Picker.Item label="YouTube" value="youtube" />
-        <Picker.Item label="Instagram" value="instagram" />
-      </Picker>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Título *</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Digite o nome da receita"
+          value={titulo}
+          onChangeText={setTitulo}
+          maxLength={50}
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Descrição *</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Digite a descrição da receita"
+          value={descricao}
+          onChangeText={setDescricao}
+          maxLength={100}
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Conteúdo *</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Conteúdo (texto ou link)"
+          value={conteudo}
+          onChangeText={setConteudo}
+          maxLength={100}
+          multiline
+          textAlignVertical="top"
+        />
+      </View>
 
-      <Text style={styles.label}>Categoria</Text>
-      <Picker
-        selectedValue={categoriaId}
-        onValueChange={(value) => setCategoriaId(value)}
-      >
-        {categorias.map((cat) => (
-          <Picker.Item key={cat.id} label={cat.nome} value={cat.id} />
-        ))}
-      </Picker>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Formato *</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            style={styles.picker}
+            selectedValue={formato}
+            onValueChange={(itemValue) => setFormato(itemValue)}
+          >
+            <Picker.Item label="Texto" value="texto" />
+            <Picker.Item label="Vídeo" value="video" />
+            <Picker.Item label="TikTok" value="tiktok" />
+            <Picker.Item label="YouTube" value="youtube" />
+            <Picker.Item label="Instagram" value="instagram" />
+          </Picker>
+        </View>
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleCreate}>
-        <Text style={styles.buttonText}>Criar Receita</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Categoria *</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={categoriaId}
+            onValueChange={(value) => setCategoriaId(value)}
+          >
+            {categorias.map((cat) => (
+              <Picker.Item key={cat.id} label={cat.nome} value={cat.id} />
+            ))}
+          </Picker>
+        </View>
+      </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.botao, loading && styles.buttonDisabled]}
+          onPress={handleCreate}
+          disabled={loading}
+        >
+          <Text style={styles.textoBotao}>
+            {loading ? "Criando..." : "Criar Categoria"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.botao, styles.cancelButton]}
+          onPress={onClose}
+          disabled={loading}
+        >
+          <Text style={[styles.textoBotao, styles.cancelButtonText]}>
+            Cancelar
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#ffffff",
-  },
-
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 20,
     textAlign: "center",
     color: "#333",
   },
@@ -140,6 +182,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
     color: "#555",
+    fontWeight: "500",
+    alignSelf: "flex-start",
+  },
+
+  inputContainer: {
+    marginBottom: 16,
+    width: "100%",
   },
 
   input: {
@@ -149,96 +198,65 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    marginBottom: 15,
     backgroundColor: "#f9f9f9",
+    width: "100%",
   },
 
-  button: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+  textArea: {
+    height: 80,
+    textAlignVertical: "top",
+  },
+
+  buttonContainer: {
+    marginTop: 20,
+    gap: 10,
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 10,
+  },
+
+  botao: {
+    backgroundColor: "#3B82F6",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    width: "45%",
+  },
+
+  cancelButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#3B82F6",
   },
 
   buttonDisabled: {
     opacity: 0.6,
   },
 
-  buttonText: {
+  textoBotao: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 
-  googleButton: {
-    backgroundColor: "#fff",
-    borderColor: "#ddd",
+  cancelButtonText: {
+    color: "#3B82F6",
+  },
+
+  pickerContainer: {
     borderWidth: 1,
-    paddingVertical: 12,
+    borderColor: "#ddd",
     borderRadius: 8,
-    alignItems: "center",
-    marginTop: 10,
+    backgroundColor: "#f9f9f9",
+    overflow: "hidden",
   },
 
-  buttonTextGoogle: {
-    color: "#000",
-    fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-
-  divisor: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 20,
-  },
-
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#ccc",
-  },
-
-  divisorText: {
-    marginHorizontal: 10,
-    color: "#999",
-    fontSize: 14,
-  },
-
-  backButton: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    padding: 10,
-    zIndex: 10,
-  },
-
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    color: "#666",
-    marginBottom: 4,
-  },
-
-  contentContainer: {
-    flex: 1,
-    justifyContent: "center",
-  },
-
-  inputContainer: {
-    marginBottom: 12,
-  },
-
-  buttonContainer: {
-    marginVertical: 6,
-  },
-
-  buttonTextSignUp: {
-    color: "#007AFF",
-    textAlign: "center",
-    fontSize: 16,
-    fontWeight: "500",
+  picker: {
+    height: 50,
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#000000",
+    borderRadius: 8,
+    backgroundColor: "#f9f9f9",
   },
 });

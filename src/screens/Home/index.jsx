@@ -26,7 +26,18 @@ export default function Home({ navigation }) {
   async function loadCategories() {
     try {
       setLoading(true);
-      const { data: sessionData } = await supabase.auth.getSession();
+
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
+
+      if (sessionError) {
+        Toast.show({
+          type: "error",
+          text1: "Erro de sessão",
+          text2: sessionError.message,
+        });
+        return;
+      }
 
       if (!sessionData.session?.user) {
         Toast.show({
@@ -38,33 +49,30 @@ export default function Home({ navigation }) {
       }
 
       const user = sessionData.session.user;
-
       const { data, error } = await supabase
         .from("categorias")
         .select("*")
         .eq("user_id", user.id);
 
       if (error) {
-        console.error("Erro ao carregar categorias:", error);
         Toast.show({
           type: "error",
           text1: "Erro ao carregar categorias",
-          text2: "Por favor, tente novamente mais tarde.",
+          text2: error.message || "Por favor, tente novamente mais tarde.",
         });
         return;
       }
 
-      if (data && data.length > 0) {
+      if (data) {
         setCategorias(data);
       } else {
         setCategorias([]);
       }
     } catch (error) {
-      console.error("Erro na função loadCategories:", error);
       Toast.show({
         type: "error",
-        text1: "Erro ao carregar categorias",
-        text2: "Por favor, tente novamente mais tarde.",
+        text1: "Erro inesperado",
+        text2: error.message || "Por favor, tente novamente mais tarde.",
       });
     } finally {
       setLoading(false);
@@ -80,7 +88,7 @@ export default function Home({ navigation }) {
       <TouchableOpacity
         style={styles.categoryItem}
         onPress={() =>
-          navigation.navigate("RecipesScreen", { categoryId: data.id })
+          navigation.navigate("Receitas", { categoryId: data.id })
         }
         activeOpacity={0.9}
       >
@@ -89,9 +97,9 @@ export default function Home({ navigation }) {
             <FontAwesome5 name="utensils" size={32} color="#ccc" />
           </View>
           <View style={styles.categoryDetailsContainer}>
-            <Text style={styles.categoryTitle}>{data.name}</Text>
+            <Text style={styles.categoryTitle}>{data.nome}</Text>
             <Text style={styles.categoryDescription} numberOfLines={2}>
-              {data.description || "Sem descrição disponível"}
+              {data.descricao || "Sem descrição disponível"}
             </Text>
           </View>
         </View>
@@ -101,12 +109,16 @@ export default function Home({ navigation }) {
 
   const renderItem = ({ item }) => <Categories data={item} />;
 
-  const renderEmptyComponent = () => (
-    <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>Nenhuma categoria encontrada</Text>
-      <Text style={styles.emptySubText}>Adicione sua primeira categoria!</Text>
-    </View>
-  );
+  const renderEmptyComponent = () => {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Nenhuma categoria encontrada</Text>
+        <Text style={styles.emptySubText}>
+          Adicione sua primeira categoria!
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -127,6 +139,7 @@ export default function Home({ navigation }) {
           ListEmptyComponent={renderEmptyComponent}
           refreshing={loading}
           onRefresh={loadCategories}
+          showsVerticalScrollIndicator={false}
         />
       </View>
 

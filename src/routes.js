@@ -12,6 +12,7 @@ import Teste from "./screens/Teste";
 import SignIn from "./screens/SignIn";
 import SignUp from "./screens/SignUp";
 import Home from "./screens/Home";
+import RecipesScreen from "./screens/RecipesScreen";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -55,6 +56,19 @@ function DrawerApp() {
       <Drawer.Screen
         name="Teste"
         component={Teste}
+        options={{
+          drawerIcon: ({ focused, size }) => (
+            <AntDesign
+              name="test"
+              size={size}
+              color={focused ? "#b18461" : "#ccc"}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Receitas"
+        component={RecipesScreen}
         options={{
           drawerIcon: ({ focused, size }) => (
             <AntDesign

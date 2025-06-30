@@ -5,7 +5,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 25,
+    paddingHorizontal: 25,
+    paddingTop: 50,
   },
   buttonAddCategory: {
     width: "100%",
@@ -14,7 +15,8 @@ const styles = StyleSheet.create({
     gap: 10,
     backgroundColor: "#4CAF50",
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: 25,
+    marginBottom: 15,
     paddingHorizontal: 16,
     alignItems: "center",
   },
@@ -51,8 +53,7 @@ const styles = StyleSheet.create({
     fontWeight: 700,
   },
   categoryContent: {
-    backgroundColor: "#fff",
-    marginHorizontal: 16,
+    backgroundColor: "#2F4858",
     marginVertical: 6,
     borderRadius: 16,
     padding: 0,
@@ -67,14 +68,10 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
-  categoryItem: {
-    // Para efeito de toque
-  },
-
   categoryImageContainer: {
     width: "100%",
     height: 120,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#86BBD8",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -87,7 +84,7 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: "#fff",
     marginBottom: 4,
   },
 
@@ -100,7 +97,6 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     flex: 1,
     width: "100%",
-    backgroundColor: "#f8f9fa",
   },
 
   listaContainer: {
